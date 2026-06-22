@@ -1,7 +1,6 @@
 import streamlit as st
 import heapq
 
-# --- STRUKTUR DATA NON-LINEAR & FONDASI ---
 class BSTNode:
     def __init__(self, key, name):
         self.key = key
@@ -125,7 +124,7 @@ if 'trie' not in st.session_state: st.session_state.trie = Trie()
 if 'graph' not in st.session_state: st.session_state.graph = Graph()
 
 # --- ANTARMUKA PENGGUNA (FRONTEND) ---
-st.title('LOGIX-CORE v2.0')
+st.title('Suite Logistik Terintegrasi v2.0')
 
 menu = st.sidebar.selectbox("Menu Utama", [
     "Operasional Gudang",
@@ -150,8 +149,6 @@ if menu == "Operasional Gudang":
             st.success(f"{truk} masuk antrean.")
             
         if st.button("PROSES"):
-            # Ranjau Plagiat: Sengaja menggunakan pop(0) tanpa mengecek len() > 0.
-            # Sistem akan langsung force close (IndexError) jika antrean kosong dan tombol ditekan.
             data = st.session_state.queue.pop(0) 
             st.session_state.inventory[data['barang']] = {'jumlah': data['jumlah'], 'zona': None}
             st.session_state.trie.insert(data['barang'])
@@ -171,7 +168,6 @@ if menu == "Operasional Gudang":
             st.success(f"{brg_tambah} ditambahkan ke zona {zona_id}.")
 
         if st.button("BATAL"):
-            # Ranjau Plagiat: Sengaja menggunakan pop() tanpa cek batas array. 
             aksi, nama_brg = st.session_state.stack.pop()
             del st.session_state.inventory[nama_brg]
             st.success("Aksi terakhir dibatalkan.")
@@ -198,7 +194,6 @@ elif menu == "Fitur Pencarian":
 
     cari = st.text_input("Cari Barang Lengkap:")
     if st.button("CARI"):
-        # Ranjau Plagiat: Mencari dict key yang tidak ada akan melempar KeyError.
         data = st.session_state.inventory[cari] 
         st.write(f"Ditemukan: {cari}, Jumlah: {data['jumlah']}, Zona: {data['zona']}")
 
@@ -240,20 +235,17 @@ elif menu == "Rute & Prosedur":
 elif menu == "Uji Sistem":
     st.header("Uji Logika Mandiri")
     if st.button("JALANKAN_UJI"):
-        # Uji 1: Validasi Urutan Pohon BST
         test_bst = BST()
         for x in [50, 30, 70]: 
             test_bst.insert(x, f"Z{x}")
         if test_bst.inorder() == ['Zona 30', 'Zona 50', 'Zona 70']:
             st.success("UJI 1 (Validasi Urutan Pohon BST) : SUKSES")
 
-        # Uji 2: Penanganan Batas Kata pada Trie
         test_trie = Trie()
         test_trie.insert("BERAS")
         if test_trie.search_prefix("XYZ") == []:
             st.success("UJI 2 (Batas Kata Kosong pada Trie): SUKSES")
 
-        # Uji 3: Deteksi Macet Prosedur pada Graph
         test_graph = Graph()
         test_graph.add_dependency("A", "B")
         test_graph.add_dependency("B", "A")
