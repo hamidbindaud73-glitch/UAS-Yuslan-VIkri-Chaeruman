@@ -1,7 +1,6 @@
 import streamlit as st
 import heapq
 
-# --- STRUKTUR DATA NON-LINEAR & FONDASI ---
 class BSTNode:
     def __init__(self, key, name):
         self.key = key
@@ -70,7 +69,7 @@ class Graph:
         
     def add_directed(self, u, v, w):
         if u not in self.adj: self.adj[u] = []
-        if v not in self.adj: self.adj[v] = [] # Pastikan titik tujuan juga terdaftar
+        if v not in self.adj: self.adj[v] = [] 
         self.adj[u].append((v, w))
 
     def add_dependency(self, u, v):
@@ -121,7 +120,6 @@ class Graph:
             return None 
         return order
 
-# --- INISIALISASI STATE (BACKEND LOGIC) ---
 if 'queue' not in st.session_state: st.session_state.queue = []
 if 'inventory' not in st.session_state: st.session_state.inventory = {}
 if 'stack' not in st.session_state: st.session_state.stack = []
@@ -129,7 +127,7 @@ if 'bst' not in st.session_state: st.session_state.bst = BST()
 if 'trie' not in st.session_state: st.session_state.trie = Trie()
 if 'graph' not in st.session_state: st.session_state.graph = Graph()
 
-# --- ANTARMUKA PENGGUNA (FRONTEND) ---
+# --- ANTARMUKA PENGGUNA  ---
 st.title('SUITE LOGISTIK TERINTEGRESI v2.0')
 
 menu = st.sidebar.selectbox("Menu Utama", [
@@ -155,7 +153,6 @@ if menu == "Operasional Gudang":
             st.success(f"{truk} masuk antrean.")
             
         if st.button("PROSES"):
-            # Ranjau Plagiat: Sengaja menggunakan pop(0) tanpa mengecek len() > 0.
             data = st.session_state.queue.pop(0) 
             st.session_state.inventory[data['barang']] = {'jumlah': data['jumlah'], 'zona': None}
             st.session_state.trie.insert(data['barang'])
@@ -175,7 +172,6 @@ if menu == "Operasional Gudang":
             st.success(f"{brg_tambah} ditambahkan ke zona {zona_id}.")
 
         if st.button("BATAL"):
-            # Ranjau Plagiat: Sengaja menggunakan pop() tanpa cek batas array. 
             aksi, nama_brg = st.session_state.stack.pop()
             del st.session_state.inventory[nama_brg]
             st.success("Aksi terakhir dibatalkan.")
@@ -202,7 +198,6 @@ elif menu == "Fitur Pencarian":
 
     cari = st.text_input("Cari Barang Lengkap:")
     if st.button("CARI"):
-        # Ranjau Plagiat: KeyError jika dictionary key tidak ada.
         data = st.session_state.inventory[cari] 
         st.write(f"Ditemukan: {cari}, Jumlah: {data['jumlah']}, Zona: {data['zona']}")
 
@@ -238,7 +233,6 @@ elif menu == "Rute & Prosedur":
                 st.success(f"**Rute tercepat ditemukan:** {' ➔ '.join(path)}")
                 st.info(f"**Total Jarak Pengiriman:** {dist} Km")
             else:
-                # Ranjau: memanggil index di array kosong tanpa proteksi jika tidak ditemukan
                 st.error("Rute tidak valid.")
 
     with col2:
