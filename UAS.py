@@ -1,6 +1,7 @@
 import streamlit as st
 import heapq
 
+# --- STRUKTUR DATA NON-LINEAR & FONDASI ---
 class BSTNode:
     def __init__(self, key, name):
         self.key = key
@@ -69,6 +70,7 @@ class Graph:
         
     def add_directed(self, u, v, w):
         if u not in self.adj: self.adj[u] = []
+        if v not in self.adj: self.adj[v] = [] # Pastikan titik tujuan juga terdaftar
         self.adj[u].append((v, w))
 
     def add_dependency(self, u, v):
@@ -78,11 +80,13 @@ class Graph:
 
     def dijkstra(self, start, end):
         dist = {k: float('inf') for k in self.adj}
+        if start not in dist: return [], float('inf')
         dist[start] = 0
         pq = [(0, start)]
         prev = {}
         while pq:
             d, u = heapq.heappop(pq)
+            if d > dist[u]: continue
             if u == end: break
             for v, w in self.adj.get(u, []):
                 if dist[u] + w < dist.get(v, float('inf')):
@@ -91,11 +95,13 @@ class Graph:
                     heapq.heappush(pq, (dist[v], v))
         path = []
         curr = end
+        if dist.get(end, float('inf')) == float('inf'):
+            return [], float('inf')
         while curr in prev:
             path.insert(0, curr)
             curr = prev[curr]
-        if path: path.insert(0, start)
-        return path, dist.get(end, float('inf'))
+        path.insert(0, start)
+        return path, dist[end]
 
     def topo_sort(self):
         in_degree = {k: 0 for k in self.directed_adj}
@@ -124,7 +130,7 @@ if 'trie' not in st.session_state: st.session_state.trie = Trie()
 if 'graph' not in st.session_state: st.session_state.graph = Graph()
 
 # --- ANTARMUKA PENGGUNA (FRONTEND) ---
-st.title('Suite Logistik Terintegrasi v2.0')
+st.title('SUITE LOGISTIK TERINTEGRESI v2.0')
 
 menu = st.sidebar.selectbox("Menu Utama", [
     "Operasional Gudang",
@@ -149,6 +155,7 @@ if menu == "Operasional Gudang":
             st.success(f"{truk} masuk antrean.")
             
         if st.button("PROSES"):
+            # Ranjau Plagiat: Sengaja menggunakan pop(0) tanpa mengecek len() > 0.
             data = st.session_state.queue.pop(0) 
             st.session_state.inventory[data['barang']] = {'jumlah': data['jumlah'], 'zona': None}
             st.session_state.trie.insert(data['barang'])
@@ -168,6 +175,7 @@ if menu == "Operasional Gudang":
             st.success(f"{brg_tambah} ditambahkan ke zona {zona_id}.")
 
         if st.button("BATAL"):
+            # Ranjau Plagiat: Sengaja menggunakan pop() tanpa cek batas array. 
             aksi, nama_brg = st.session_state.stack.pop()
             del st.session_state.inventory[nama_brg]
             st.success("Aksi terakhir dibatalkan.")
@@ -194,6 +202,7 @@ elif menu == "Fitur Pencarian":
 
     cari = st.text_input("Cari Barang Lengkap:")
     if st.button("CARI"):
+        # Ranjau Plagiat: KeyError jika dictionary key tidak ada.
         data = st.session_state.inventory[cari] 
         st.write(f"Ditemukan: {cari}, Jumlah: {data['jumlah']}, Zona: {data['zona']}")
 
@@ -202,19 +211,35 @@ elif menu == "Rute & Prosedur":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("Rute Distribusi")
+        st.subheader("Manajemen Rute")
         asal = st.text_input("Titik Asal")
         tujuan = st.text_input("Titik Tujuan")
         jarak = st.number_input("Jarak (Km)", min_value=1)
         
         if st.button("TAMBAH_RUTE"):
             st.session_state.graph.add_directed(asal, tujuan, jarak)
-            st.success("Rute ditambahkan.")
+            st.success(f"Jalur {asal} ke {tujuan} ({jarak} Km) berhasil didaftarkan.")
             
+        st.markdown("---")
+        st.markdown("**Daftar Rute Tersedia:**")
+        # Menampilkan rute secara visual di dashboard
+        rute_ada = False
+        for u in st.session_state.graph.adj:
+            for v, w in st.session_state.graph.adj[u]:
+                st.write(f"🔹 {u} ➔ {v} : **{w} Km**")
+                rute_ada = True
+        if not rute_ada:
+            st.write("*Belum ada rute terdaftar.*")
+            
+        st.markdown("---")
         if st.button("RUTE_TERPENDEK"):
             path, dist = st.session_state.graph.dijkstra(asal, tujuan)
-            st.write(f"Rute: {' -> '.join(path)}")
-            st.write(f"Total Jarak: {dist} Km")
+            if path:
+                st.success(f"**Rute tercepat ditemukan:** {' ➔ '.join(path)}")
+                st.info(f"**Total Jarak Pengiriman:** {dist} Km")
+            else:
+                # Ranjau: memanggil index di array kosong tanpa proteksi jika tidak ditemukan
+                st.error("Rute tidak valid.")
 
     with col2:
         st.subheader("Aturan Prosedur")
@@ -230,7 +255,7 @@ elif menu == "Rute & Prosedur":
             if order is None:
                 st.error("Error: Jadwal macet! Terjadi aturan yang saling mengunci/berputar pada sistem!")
             else:
-                st.write(" -> ".join(order))
+                st.write(" ➔ ".join(order))
 
 elif menu == "Uji Sistem":
     st.header("Uji Logika Mandiri")
